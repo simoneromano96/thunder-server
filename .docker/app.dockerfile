@@ -2,6 +2,9 @@ FROM node:alpine as build
 
 WORKDIR /app
 
+## Install build toolchain, install node deps and compile native add-ons
+RUN apk add --no-cache python make g++
+
 COPY . .
 
 RUN npm i
