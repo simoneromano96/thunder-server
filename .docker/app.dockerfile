@@ -27,6 +27,10 @@ WORKDIR /app
 
 COPY --from=build /app/package.json .
 
+# TODO: This must be optimized, python/make/g++ are required in build phase
+# Install build toolchain, install node deps and compile native add-ons
+RUN apk add python3 make g++
+
 RUN npm i
 
 COPY --from=build /app/dist ./dist
