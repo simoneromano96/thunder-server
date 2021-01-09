@@ -77,6 +77,7 @@ const main = async () => {
   app.register(fastifyStatic, {
     root: config.app.uploads.path,
     prefix: getPublicPrefix(),
+    list: true,
   })
 
   // Handles uploads
