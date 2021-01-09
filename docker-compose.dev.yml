@@ -1,16 +1,16 @@
 version: '3.6'
 
 services:
-  #app:
-  #  build: 
-  #    context: .
-  #    dockerfile: ./.docker/app.dockerfile
-  #  environment: 
-  #    APP_DB: mongodb://root:example@mongo
-  #    APP_PORT: 80
-  #    APP_API_PREFIX: /api      
-  #  ports: 
-  #    - 3000:80
+  app:
+    build: 
+      context: .
+      dockerfile: ./.docker/app.dockerfile
+    environment: 
+      APP_DB: mongodb://root:example@mongo
+      APP_PORT: 80
+      APP_API_PREFIX: /api      
+    ports: 
+      - 3000:80
 
   mongo:
     image: mongo
