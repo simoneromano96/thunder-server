@@ -19,6 +19,9 @@ import { schema } from "./schema"
 import config from "./config"
 
 const main = async () => {
+  console.log("App configuration")
+  console.log({ ...config.app })
+
   // Create a new redis client
   const redisClient = new RedisClient({
     host: config.app.redis.host,
