@@ -10,7 +10,7 @@ steps:
       username: simoneromano96
       password: 
         from_secret: token
-      repo: ghcr.io/simoneromano96/thunder/backend
+      repo: ghcr.io/simoneromano96/thunder/server
       context: .
       dockerfile: ./.docker/app.dockerfile
       auto_tag: true
