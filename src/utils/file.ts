@@ -12,6 +12,9 @@ import config from "../config"
 
 export const saveFile = async (image: any): Promise<{ filepath: string; filename: string }> => {
   const { createReadStream } = await image
+
+  console.log(await image)
+
   const readStream = createReadStream()
 
   const uploadsDir = config.app.uploads.path
