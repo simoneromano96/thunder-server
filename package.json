@@ -27,13 +27,16 @@
     "fastify-cors": "^5.1.0",
     "fastify-helmet": "^5.1.0",
     "fastify-session": "^5.2.1",
+    "fastify-static": "^3.3.0",
     "graphql-scalars": "^1.7.0",
     "graphql-upload": "^11.0.0",
     "ioredis": "^4.19.4",
     "mercurius": "^6.9.0",
     "mercurius-upload": "^1.1.1",
     "mongoose": "^5.11.11",
-    "nexus": "^1.0.0"
+    "nanoid": "^3.1.20",
+    "nexus": "^1.0.0",
+    "paseto.js": "^0.1.6"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",

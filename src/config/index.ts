@@ -6,6 +6,8 @@ export default {
     port: process.env.APP_PORT ?? 3000,
     db: process.env.APP_DB ?? "mongodb://root:example@localhost",
     apiPrefix: process.env.APP_API_PREFIX,
+    staticPrefix: process.env.APP_STATIC_PREFIX ?? "/public",
+    hostname: process.env.APP_HOSTNAME ?? "http://localhost:3000",
     session: {
       secret: process.env.APP_SESSION_SECRET ?? "CNLxr58XzCaZuodxfZxQsOCRxTRrCki5",
     },

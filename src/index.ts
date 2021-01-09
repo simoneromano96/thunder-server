@@ -5,6 +5,8 @@ import helmet from "fastify-helmet"
 // Session
 import cookie from "fastify-cookie"
 import session from "fastify-session"
+// Static files server
+import fastifyStatic from "fastify-static"
 // Graphql Server
 import mercurius from "mercurius"
 // Graphql upload
@@ -17,6 +19,7 @@ import mongoose from "mongoose"
 
 import { schema } from "./schema"
 import config from "./config"
+import { getPublicPrefix } from "./utils/file"
 
 const main = async () => {
   console.log("App configuration")
@@ -68,6 +71,12 @@ const main = async () => {
       httpOnly: config.app.cookie.httpOnly,
       domain: config.app.cookie.domain,
     },
+  })
+
+  // Serve static files
+  app.register(fastifyStatic, {
+    root: config.app.uploads.path,
+    prefix: getPublicPrefix(),
   })
 
   // Handles uploads
