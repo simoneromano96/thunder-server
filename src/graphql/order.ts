@@ -1,8 +1,8 @@
-import { arg, list, mutationField, nonNull, objectType, queryField, stringArg } from "nexus"
+import { arg, list, mutationField, nonNull, objectType, queryField, stringArg, unionType } from "nexus"
 
 import { OrderModel } from "../models/order"
 import { Upload } from "../typings"
-import { getFileUrl, saveFile } from "../utils/file"
+import { getFileUrl, INewFile, saveFile, saveStringFile } from "../utils/file"
 
 const Order = objectType({
   name: "Order",
@@ -23,7 +23,17 @@ const ordersQuery = queryField("orders", {
     table: stringArg({ description: "The order's table" }),
     waiter: stringArg({ description: "The order's waiter" }),
   },
-  resolve: async (_root, { table, waiter }, _context) => await OrderModel.find({ table, waiter }),
+  resolve: async (_root, { table, waiter }, _context) => {
+    let query = {}
+    if (table) {
+      query = { ...query, table }
+    }
+    if (waiter) {
+      query = { ...query, waiter }
+    }
+
+    return await OrderModel.find(query)
+  },
 })
 
 const newOrderMutation = mutationField("newOrder", {
@@ -33,11 +43,20 @@ const newOrderMutation = mutationField("newOrder", {
     table: nonNull(stringArg({ description: "The new order's table" })),
     waiter: nonNull(stringArg({ description: "The new order's waiter" })),
     additionalInfo: stringArg({ description: "The new order's optional additional informations" }),
-    image: nonNull(arg({ description: "The new order's image", type: Upload })),
+    image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
+    svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
-  resolve: async (_root, { image, table, waiter, additionalInfo }, _context) => {
-    const { filename } = await saveFile(image)
-    const imageUrl = getFileUrl(filename)
+  resolve: async (_root, { svgImage, image, table, waiter, additionalInfo }, _context) => {
+    if (!svgImage || !image) {
+      throw new Error("Must have image or svgImage")
+    }
+    let saveFileResult: INewFile
+    if (image) {
+      saveFileResult = await saveFile(image)
+    } else {
+      saveFileResult = await saveStringFile(svgImage, "svg")
+    }
+    const imageUrl = getFileUrl(saveFileResult.filename)
 
     const newOrder = new OrderModel({ table, waiter, imageUrl, additionalInfo })
     return await newOrder.save()

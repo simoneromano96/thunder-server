@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid"
-import { createWriteStream } from "fs"
+import { extension as getExtension } from "mime-types"
+import { createWriteStream, promises, ReadStream } from "fs"
 import path from "path"
 
 import { pipeline } from "stream"
@@ -10,21 +11,43 @@ const pipelineAsync = promisify(pipeline)
 
 import config from "../config"
 
-export const saveFile = async (image: any): Promise<{ filepath: string; filename: string }> => {
-  const { createReadStream } = await image
+export interface INewFile {
+  filepath: string
+  filename: string
+}
 
-  console.log(await image)
+export interface IUpload {
+  filename: string
+  mimetype: string
+  encoding: string
+  createReadStream: () => ReadStream
+}
+
+export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
+  const { createReadStream, mimetype } = await image
 
   const readStream = createReadStream()
 
   const uploadsDir = config.app.uploads.path
 
   const filename = nanoid()
+  const fileExtension = getExtension(mimetype)
 
-  const filepath = path.join(uploadsDir, filename)
+  const filepath = path.join(uploadsDir, `${filename}.${fileExtension}`)
   const writeStream = createWriteStream(filepath)
 
   await pipelineAsync(readStream, writeStream)
+
+  return { filepath, filename }
+}
+
+export const saveStringFile = async (fileContent: string, fileExtension: string): Promise<INewFile> => {
+  const filename = nanoid()
+
+  const uploadsDir = config.app.uploads.path
+  const filepath = path.join(uploadsDir, `${filename}.${fileExtension}`)
+
+  await promises.writeFile(filepath, fileContent)
 
   return { filepath, filename }
 }

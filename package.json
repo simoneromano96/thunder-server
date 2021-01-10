@@ -33,6 +33,7 @@
     "ioredis": "^4.19.4",
     "mercurius": "^6.9.0",
     "mercurius-upload": "^1.1.1",
+    "mime-types": "^2.1.28",
     "mongoose": "^5.11.11",
     "nanoid": "^3.1.20",
     "nexus": "^1.0.0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",
+    "@types/mime-types": "^2.1.0",
     "@types/ws": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^4.12.0",
     "@typescript-eslint/parser": "^4.12.0",
