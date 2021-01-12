@@ -30,10 +30,11 @@ export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
 
   const uploadsDir = config.app.uploads.path
 
-  const filename = nanoid()
+  const randomId = nanoid()
   const fileExtension = getExtension(mimetype)
 
-  const filepath = path.join(uploadsDir, `${filename}.${fileExtension}`)
+  const filename = `${randomId}.${fileExtension}`
+  const filepath = path.join(uploadsDir, filename)
   const writeStream = createWriteStream(filepath)
 
   await pipelineAsync(readStream, writeStream)
@@ -42,10 +43,12 @@ export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
 }
 
 export const saveStringFile = async (fileContent: string, fileExtension: string): Promise<INewFile> => {
-  const filename = nanoid()
+  const randomId = nanoid()
 
   const uploadsDir = config.app.uploads.path
-  const filepath = path.join(uploadsDir, `${filename}.${fileExtension}`)
+
+  const filename = `${randomId}.${fileExtension}`
+  const filepath = path.join(uploadsDir, filename)
 
   await promises.writeFile(filepath, fileContent)
 

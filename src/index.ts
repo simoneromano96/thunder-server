@@ -14,6 +14,8 @@ import mercuriusUpload from "mercurius-upload"
 // Redis
 import RedisClient from "ioredis"
 import connectRedis from "connect-redis"
+// FS Utils
+import { promises } from "fs"
 
 import mongoose from "mongoose"
 
@@ -24,6 +26,18 @@ import { getPublicPrefix } from "./utils/file"
 const main = async () => {
   console.log("App configuration")
   console.log({ ...config.app })
+
+  // Prepare upload folder
+  const uploadFolderPath = config.app.uploads.path
+  try {
+    await promises.access(uploadFolderPath)
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      await promises.mkdir(uploadFolderPath, { recursive: true })
+    } else {
+      console.error(error)
+    }
+  }
 
   // Create a new redis client
   const redisClient = new RedisClient({
