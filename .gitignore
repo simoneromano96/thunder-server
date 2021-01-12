@@ -102,3 +102,6 @@ dist
 
 # generated schema
 */**/generated
+
+# Upload folder
+src/uploads
