@@ -5,6 +5,7 @@ interface Order {
   waiter: string
   imageUrl: string
   additionalInfo?: string
+  shift: number
 }
 
 interface OrderDocument extends Order, Document {}
@@ -25,6 +26,10 @@ const OrderSchema = new Schema(
     },
     additionalInfo: {
       type: String,
+    },
+    shift: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true },

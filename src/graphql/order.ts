@@ -1,4 +1,4 @@
-import { arg, list, mutationField, nonNull, objectType, queryField, stringArg, unionType } from "nexus"
+import { arg, idArg, list, mutationField, nonNull, objectType, queryField, stringArg, unionType } from "nexus"
 
 import { OrderModel } from "../models/order"
 import { Upload } from "../typings"
@@ -8,11 +8,12 @@ const Order = objectType({
   name: "Order",
   description: "An order object",
   definition(t) {
-    t.string("id", { description: "The order's unique ID" })
+    t.id("id", { description: "The order's unique ID" })
     t.string("table", { description: "The table of the order" })
     t.string("waiter", { description: "The waiter that made the order" })
     t.string("imageUrl", { description: "Uploaded image url" })
     t.string("additionalInfo", { description: "The order's additional info" })
+    t.int("shift", { description: "The order's table shift" })
   },
 })
 
@@ -63,8 +64,26 @@ const newOrderMutation = mutationField("newOrder", {
   },
 })
 
+const closeOrderShiftMutation = mutationField("closeOrderShift", {
+  type: nonNull(Order),
+  description: "Closes the current order, freing the table for the next shift",
+  args: {
+    orderId: nonNull(idArg({ description: "The order's ID" })),
+    // table: nonNull(stringArg({ description: "The table that needs to be closed" })),
+  },
+  resolve: async (_root, { orderId }, _context) => {
+    const order = await OrderModel.findById(orderId)
+    if (!order) {
+      throw new Error("Could not find order")
+    }
+    order.shift++
+    await order.save()
+    return order
+  },
+})
+
 const OrderQuery = [ordersQuery]
 
-const OrderMutation = [newOrderMutation]
+const OrderMutation = [newOrderMutation, closeOrderShiftMutation]
 
 export { OrderQuery, OrderMutation }
