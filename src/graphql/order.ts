@@ -47,16 +47,13 @@ const newOrderMutation = mutationField("newOrder", {
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
   resolve: async (_root, { svgImage, image, table, waiter, additionalInfo }, _context) => {
-    console.log(svgImage)
-    console.log(image)
-
     if (!svgImage && !image) {
       throw new Error("Must have image or svgImage")
     }
-    let saveFileResult: INewFile
+    let saveFileResult!: INewFile
     if (image) {
       saveFileResult = await saveFile(image)
-    } else {
+    } else if (svgImage) {
       saveFileResult = await saveStringFile(svgImage, "svg")
     }
     const imageUrl = getFileUrl(saveFileResult.filename)
