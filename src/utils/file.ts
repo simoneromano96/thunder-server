@@ -55,6 +55,19 @@ export const saveStringFile = async (fileContent: string, fileExtension: string)
   return { filepath, filename }
 }
 
+export const saveImage = async (svgImage: string | null | undefined, image?: Promise<IUpload>): Promise<INewFile> => {
+  if (!svgImage && !image) {
+    throw new Error("Must have image or svgImage")
+  }
+  let saveFileResult!: INewFile
+  if (image) {
+    saveFileResult = await saveFile(image)
+  } else if (svgImage) {
+    saveFileResult = await saveStringFile(svgImage, "svg")
+  }
+  return saveFileResult
+}
+
 export const getPublicPrefix = (): string => `${config.app.apiPrefix ?? ""}${config.app.staticPrefix}`
 
 export const getFileUrl = (filename: string): string => `${getPublicPrefix()}/${filename}`
