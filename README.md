@@ -1,4 +1,5 @@
-[![Build Status](https://cloud.drone.io/api/badges/simoneromano96/graphql-todo-backend/status.svg)](https://cloud.drone.io/simoneromano96/graphql-todo-backend)
 
-# graphql-todo-backend
-graphql-todo-backend twitch live-coding stream
+[![Build Status](https://drone.simoneromano.eu/api/badges/simoneromano96/thunder-server/status.svg)](https://drone.simoneromano.eu/simoneromano96/thunder-server)
+
+# thunder-server
+
