@@ -18,7 +18,7 @@ const OrderSchema = new Schema(
     },
     waiter: {
       type: String,
-      required: true,
+      // required: true,
     },
     imageUrl: {
       type: String,

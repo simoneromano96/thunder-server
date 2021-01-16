@@ -42,7 +42,7 @@ const newOrderMutation = mutationField("newOrder", {
   description: "Creates a new order",
   args: {
     table: nonNull(stringArg({ description: "The new order's table" })),
-    waiter: nonNull(stringArg({ description: "The new order's waiter" })),
+    waiter: stringArg({ description: "The new order's waiter" }),
     additionalInfo: stringArg({ description: "The new order's optional additional informations" }),
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
