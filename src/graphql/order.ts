@@ -27,6 +27,8 @@ const Order = objectType({
     t.string("additionalInfo", { description: "The order's additional info" })
     // t.int("shift", { description: "The order's table shift" })
     t.boolean("closed", { description: "If the order has been closed" })
+    t.dateTime("createdAt", { description: "When the order has been created" })
+    t.dateTime("updatedAt", { description: "When the order has been last updated" })
   },
 })
 
