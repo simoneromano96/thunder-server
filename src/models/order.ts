@@ -1,15 +1,17 @@
 import { Schema, model, Document } from "mongoose"
 
-interface Order {
+interface IOrder {
   table: string
   // waiter: string
   imageUrls: string[]
   additionalInfo?: string
   // shift: number
   closed: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
-interface OrderDocument extends Order, Document {}
+interface OrderDocument extends IOrder, Document {}
 
 const OrderSchema = new Schema(
   {
@@ -45,4 +47,4 @@ const OrderSchema = new Schema(
 
 const OrderModel = model<OrderDocument>("order", OrderSchema)
 
-export { Order, OrderDocument, OrderModel }
+export { IOrder, OrderDocument, OrderModel }

@@ -1,8 +1,27 @@
-import { arg, booleanArg, idArg, list, mutationField, nonNull, objectType, queryField, stringArg } from "nexus"
+import {
+  arg,
+  booleanArg,
+  enumType,
+  idArg,
+  list,
+  mutationField,
+  nonNull,
+  objectType,
+  queryField,
+  stringArg,
+  subscriptionField,
+} from "nexus"
 
-import { OrderDocument, OrderModel } from "../models/order"
+import { OrderDocument, OrderModel, IOrder } from "../models/order"
 import { Upload } from "../typings"
 import { getFileUrl, INewFile, saveImage } from "../utils/file"
+
+enum ChangeTypes {
+  // ALL = "ALL",
+  CREATED = "CREATED",
+  UPDATED = "UPDATED",
+  DELETED = "DELETED",
+}
 
 /**
  * Gets the order, throws if not found
@@ -15,6 +34,12 @@ const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
   }
   return order
 }
+
+const ChangeType = enumType({
+  name: "Change Type",
+  description: "The type of change to an object",
+  members: Object.values(ChangeTypes),
+})
 
 const Order = objectType({
   name: "Order",
@@ -75,13 +100,18 @@ const newOrderMutation = mutationField("newOrder", {
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
-  resolve: async (_root, { svgImage, image, table, additionalInfo }, _context) => {
+  resolve: async (_root, { svgImage, image, table, additionalInfo }, { pubsub }) => {
     // Get image URL
     const saveFileResult: INewFile = await saveImage(svgImage, image)
     const imageUrl = getFileUrl(saveFileResult.filename)
     // Create and save the new order
-    const newOrder = new OrderModel({ table, imageUrls: [imageUrl], additionalInfo })
-    return await newOrder.save()
+    const order = new OrderModel({ table, imageUrls: [imageUrl], additionalInfo })
+    const newOrder = await order.save()
+    await pubsub.publish({
+      topic: `ORDERS_CHANGED_${ChangeTypes.CREATED}`,
+      payload: order,
+    })
+    return newOrder
   },
 })
 
@@ -96,7 +126,7 @@ const editOrderMutation = mutationField("editOrder", {
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
-  resolve: async (_root, { id, closed, additionalInfo, image, svgImage }, _context) => {
+  resolve: async (_root, { id, closed, additionalInfo, image, svgImage }, { pubsub }) => {
     // Get the order or throw if not found
     const order = await getRequiredOrder(id)
     if (image || svgImage) {
@@ -112,7 +142,12 @@ const editOrderMutation = mutationField("editOrder", {
     if (closed !== null && closed !== undefined) {
       order.closed = closed
     }
-    return await order.save()
+    const editedOrder = await order.save()
+    await pubsub.publish({
+      topic: `ORDERS_CHANGED_${ChangeTypes.UPDATED}`,
+      payload: editedOrder,
+    })
+    return editedOrder
   },
 })
 
@@ -124,7 +159,7 @@ const addImageToOrderMutation = mutationField("addImageToOrder", {
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
-  resolve: async (_root, { id, svgImage, image }, _context) => {
+  resolve: async (_root, { id, svgImage, image }, { pubsub }) => {
     // Get the order or throw if not found
     const order = await getRequiredOrder(id)
     // Get image URL
@@ -132,7 +167,12 @@ const addImageToOrderMutation = mutationField("addImageToOrder", {
     const imageUrl = getFileUrl(saveFileResult.filename)
     // Update the order with the new image
     order.imageUrls = [...order.imageUrls, imageUrl]
-    return await order.save()
+    const editedOrder = await order.save()
+    await pubsub.publish({
+      topic: `ORDERS_CHANGED_${ChangeTypes.UPDATED}`,
+      payload: editedOrder,
+    })
+    return editedOrder
   },
 })
 
@@ -154,8 +194,20 @@ const closeOrderShiftMutation = mutationField("closeOrderShift", {
 })
 */
 
+const ordersChangedSubscription = subscriptionField("ordersChanged", {
+  type: nonNull(Order),
+  description: "React to orders change",
+  args: {
+    changeType: arg({ type: ChangeType, description: "The type of change that needs to trigger the push" }),
+  },
+  subscribe: async (_root, { changeType }, { pubsub }) => await pubsub.subscribe(`ORDERS_CHANGED_${changeType}`),
+  resolve: async (payload: IOrder) => payload,
+})
+
 const OrderQuery = [ordersQuery, orderQuery]
 
 const OrderMutation = [newOrderMutation, editOrderMutation, addImageToOrderMutation]
 
-export { OrderQuery, OrderMutation }
+const OrderSubscription = [ordersChangedSubscription]
+
+export { OrderQuery, OrderMutation, OrderSubscription }
