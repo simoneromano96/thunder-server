@@ -36,7 +36,7 @@ const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
 }
 
 const ChangeType = enumType({
-  name: "Change Type",
+  name: "ChangeType",
   description: "The type of change to an object",
   members: Object.values(ChangeTypes),
 })
