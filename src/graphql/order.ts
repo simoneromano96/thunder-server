@@ -206,7 +206,7 @@ const ordersChangedSubscription = subscriptionField("ordersChanged", {
   type: nonNull(Order),
   description: "React to orders change",
   args: {
-    changeType: arg({ type: ChangeType, description: "The type of change that needs to trigger the push" }),
+    changeType: arg({ type: nonNull(ChangeType), description: "The type of change that needs to trigger the push" }),
   },
   subscribe: async (_root, { changeType }, { pubsub }) => await pubsub.subscribe(`ORDERS_CHANGED_${changeType}`),
   resolve: async (payload: IOrder) => payload,
