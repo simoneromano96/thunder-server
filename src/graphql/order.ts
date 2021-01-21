@@ -17,7 +17,7 @@ import { Upload } from "../typings"
 import { getFileUrl, INewFile, saveImage } from "../utils/file"
 
 enum ChangeTypes {
-  // ALL = "ALL",
+  ALL = "ALL",
   CREATED = "CREATED",
   UPDATED = "UPDATED",
   DELETED = "DELETED",
@@ -33,6 +33,22 @@ const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
     throw new Error("Could not find order")
   }
   return order
+}
+
+/**
+ * @param changeType The channel to publish to
+ * @param pubsub The pubsub client
+ * @param order The order to push
+ */
+async function publishOrderChange(changeType: ChangeTypes, pubsub: any, order: OrderDocument) {
+  await pubsub.publish({
+    topic: `ORDERS_CHANGED_${changeType}`,
+    payload: order,
+  })
+  await pubsub.publish({
+    topic: `ORDERS_CHANGED_${ChangeTypes.ALL}`,
+    payload: order,
+  })
 }
 
 const ChangeType = enumType({
@@ -107,10 +123,7 @@ const newOrderMutation = mutationField("newOrder", {
     // Create and save the new order
     const order = new OrderModel({ table, imageUrls: [imageUrl], additionalInfo })
     const newOrder = await order.save()
-    await pubsub.publish({
-      topic: `ORDERS_CHANGED_${ChangeTypes.CREATED}`,
-      payload: order,
-    })
+    await publishOrderChange(ChangeTypes.CREATED, pubsub, order)
     return newOrder
   },
 })
@@ -143,10 +156,8 @@ const editOrderMutation = mutationField("editOrder", {
       order.closed = closed
     }
     const editedOrder = await order.save()
-    await pubsub.publish({
-      topic: `ORDERS_CHANGED_${ChangeTypes.UPDATED}`,
-      payload: editedOrder,
-    })
+    await publishOrderChange(ChangeTypes.UPDATED, pubsub, editedOrder)
+
     return editedOrder
   },
 })
@@ -168,10 +179,7 @@ const addImageToOrderMutation = mutationField("addImageToOrder", {
     // Update the order with the new image
     order.imageUrls = [...order.imageUrls, imageUrl]
     const editedOrder = await order.save()
-    await pubsub.publish({
-      topic: `ORDERS_CHANGED_${ChangeTypes.UPDATED}`,
-      payload: editedOrder,
-    })
+    await publishOrderChange(ChangeTypes.UPDATED, pubsub, editedOrder)
     return editedOrder
   },
 })
