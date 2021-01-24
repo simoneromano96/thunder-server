@@ -23,6 +23,10 @@ export interface IUpload {
   createReadStream: () => ReadStream
 }
 
+/**
+ * Saves a file of a form-url-upload field
+ * @param image the raw binary image data
+ */
 export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
   const { createReadStream, mimetype } = await image
 
@@ -42,6 +46,11 @@ export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
   return { filepath, filename }
 }
 
+/**
+ * Saves a string content as a file
+ * @param fileContent The string with the file contents
+ * @param fileExtension The file extension
+ */
 export const saveStringFile = async (fileContent: string, fileExtension: string): Promise<INewFile> => {
   const randomId = nanoid()
 
@@ -55,6 +64,11 @@ export const saveStringFile = async (fileContent: string, fileExtension: string)
   return { filepath, filename }
 }
 
+/**
+ * Saves an image to a file, gives back the internal filepath and generated name
+ * @param svgImage A stringified svg image
+ * @param image A raw image (or any file)
+ */
 export const saveImage = async (svgImage: string | null | undefined, image?: Promise<IUpload>): Promise<INewFile> => {
   if (!svgImage && !image) {
     throw new Error("Must have image or svgImage")
@@ -68,6 +82,13 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
   return saveFileResult
 }
 
+/**
+ * Gets this server's public prefix
+ */
 export const getPublicPrefix = (): string => `${config.app.apiPrefix ?? ""}${config.app.staticPrefix}`
 
+/**
+ * From the filename (including the extension) gives back the full URL of where to find the file
+ * @param filename the file name (ex. something.jpeg)
+ */
 export const getFileUrl = (filename: string): string => `${config.app.hostname}/${getPublicPrefix()}/${filename}`
