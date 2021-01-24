@@ -3,6 +3,7 @@ import {
   booleanArg,
   enumType,
   idArg,
+  intArg,
   list,
   mutationField,
   nonNull,
@@ -40,7 +41,7 @@ const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
  * @param pubsub The pubsub client
  * @param order The order to push
  */
-async function publishOrderChange(changeType: ChangeTypes, pubsub: any, order: OrderDocument) {
+const publishOrderChange = async (changeType: ChangeTypes, pubsub: any, order: OrderDocument) => {
   await pubsub.publish({
     topic: `ORDERS_CHANGED_${changeType}`,
     payload: order,
@@ -77,7 +78,7 @@ const ordersQuery = queryField("orders", {
   type: list(nonNull(Order)),
   description: "Returns the current orders",
   args: {
-    table: stringArg({ description: "The order's table" }),
+    table: intArg({ description: "The order's table" }),
     // waiter: stringArg({ description: "The order's waiter" }),
     closed: booleanArg({
       description: "Wether or not we should filter only open orders, defaults on false getting only the active orders",
@@ -110,13 +111,18 @@ const newOrderMutation = mutationField("newOrder", {
   type: nonNull(Order),
   description: "Creates a new order",
   args: {
-    table: nonNull(stringArg({ description: "The new order's table" })),
+    table: nonNull(intArg({ description: "The new order's table, must not have a currently active order" })),
     // waiter: stringArg({ description: "The new order's waiter" }),
     additionalInfo: stringArg({ description: "The new order's optional additional informations" }),
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
   resolve: async (_root, { svgImage, image, table, additionalInfo }, { pubsub }) => {
+    // Check that the table has no active orders
+    const activeOrder = await OrderModel.findOne({ table, closed: false })
+    if (activeOrder !== null) {
+      throw new Error("The table already has an active order, close it")
+    }
     // Get image URL
     const saveFileResult: INewFile = await saveImage(svgImage, image)
     const imageUrl = getFileUrl(saveFileResult.filename)
@@ -149,7 +155,7 @@ const editOrderMutation = mutationField("editOrder", {
       // Update the order with the new image
       order.imageUrls = [...order.imageUrls, imageUrl]
     }
-    if (additionalInfo) {
+    if (additionalInfo !== null && additionalInfo !== undefined) {
       order.additionalInfo = additionalInfo
     }
     if (closed !== null && closed !== undefined) {

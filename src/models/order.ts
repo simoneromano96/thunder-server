@@ -17,7 +17,7 @@ const OrderSchema = new Schema(
   {
     // MAYBEDO new collection for tables
     table: {
-      type: String,
+      type: Number,
       required: true,
     },
     // TODO
