@@ -70,4 +70,4 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
 
 export const getPublicPrefix = (): string => `${config.app.apiPrefix ?? ""}${config.app.staticPrefix}`
 
-export const getFileUrl = (filename: string): string => `${getPublicPrefix()}/${filename}`
+export const getFileUrl = (filename: string): string => `${config.app.hostname}/${getPublicPrefix()}/${filename}`
