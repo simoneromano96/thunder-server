@@ -91,4 +91,4 @@ export const getPublicPrefix = (): string => `${config.app.apiPrefix ?? ""}${con
  * From the filename (including the extension) gives back the full URL of where to find the file
  * @param filename the file name (ex. something.jpeg)
  */
-export const getFileUrl = (filename: string): string => `${config.app.hostname}/${getPublicPrefix()}/${filename}`
+export const getFileUrl = (filename: string): string => `${config.app.hostname}${getPublicPrefix()}/${filename}`
