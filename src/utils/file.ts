@@ -2,12 +2,8 @@ import { nanoid } from "nanoid"
 import { extension as getExtension } from "mime-types"
 import { createWriteStream, promises, ReadStream } from "fs"
 import path from "path"
-
-import { pipeline } from "stream"
-import { promisify } from "util"
-
-// Promisify pipeline function
-const pipelineAsync = promisify(pipeline)
+// @ts-ignore: @types/node is not yet compatible with node 15
+import { pipeline } from "stream/promises"
 
 import config from "../config"
 
@@ -23,25 +19,35 @@ export interface IUpload {
   createReadStream: () => ReadStream
 }
 
+const getFilepathAndFilename = (fileExtension: string) => {
+  const randomId = nanoid()
+  const filename = `${randomId}.${fileExtension}`
+
+  const uploadsDir = config.app.uploads.path
+  const filepath = path.join(uploadsDir, filename)
+  return { filepath, filename }
+}
+
 /**
  * Saves a file of a form-url-upload field
  * @param image the raw binary image data
+ * @throws Will throw if the image file has no suitable file extension
  */
 export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
   const { createReadStream, mimetype } = await image
 
   const readStream = createReadStream()
 
-  const uploadsDir = config.app.uploads.path
-
-  const randomId = nanoid()
   const fileExtension = getExtension(mimetype)
+  if (!fileExtension) {
+    throw new Error("Could not find a suitable file extension")
+  }
 
-  const filename = `${randomId}.${fileExtension}`
-  const filepath = path.join(uploadsDir, filename)
+  const { filepath, filename } = getFilepathAndFilename(fileExtension)
+
   const writeStream = createWriteStream(filepath)
 
-  await pipelineAsync(readStream, writeStream)
+  await pipeline(readStream, writeStream)
 
   return { filepath, filename }
 }
@@ -52,12 +58,7 @@ export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
  * @param fileExtension The file extension
  */
 export const saveStringFile = async (fileContent: string, fileExtension: string): Promise<INewFile> => {
-  const randomId = nanoid()
-
-  const uploadsDir = config.app.uploads.path
-
-  const filename = `${randomId}.${fileExtension}`
-  const filepath = path.join(uploadsDir, filename)
+  const { filepath, filename } = getFilepathAndFilename(fileExtension)
 
   await promises.writeFile(filepath, fileContent)
 
