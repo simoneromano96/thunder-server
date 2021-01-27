@@ -161,12 +161,14 @@ const newOrderMutation = mutationField("newOrder", {
     const saveFileResult: INewFile = await saveImage(svgImage, image)
     const imageUrl = getFileUrl(saveFileResult.filename)
     // Create order info
-    const orderInfo = {
-      imageUrl,
-      additionalInfo,
-    }
+    const orderInfoList = [
+      {
+        imageUrl,
+        additionalInfo,
+      },
+    ]
     // Create and save the new order
-    const order = new OrderModel({ table, orderInfo })
+    const order = new OrderModel({ table, orderInfoList })
     const newOrder = await order.save()
     await publishOrderChange(ChangeTypes.CREATED, pubsub, order)
     return newOrder
