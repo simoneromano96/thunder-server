@@ -25,6 +25,10 @@ enum ChangeTypes {
   DELETED = "DELETED",
 }
 
+interface IOrderPublished extends IOrder {
+  changeType: ChangeTypes
+}
+
 /**
  * Gets the order, throws if not found
  * @param orderId the order ID
@@ -58,11 +62,11 @@ const requireAvailableTable = async (table: number) => {
 const publishOrderChange = async (changeType: ChangeTypes, pubsub: any, order: OrderDocument) => {
   await pubsub.publish({
     topic: `ORDERS_CHANGED_${changeType}`,
-    payload: order,
+    payload: { order },
   })
   await pubsub.publish({
     topic: `ORDERS_CHANGED_${ChangeTypes.ALL}`,
-    payload: order,
+    payload: { order, changeType },
   })
 }
 
@@ -108,6 +112,15 @@ const Order = objectType({
     t.nonNull.field("orderInfoList", { type: list(nonNull(OrderInfo)), description: "All the order infos" })
     t.field("createdAt", { type: "DateTime", description: "When the order has been created" })
     t.field("updatedAt", { type: "DateTime", description: "When the order has been last updated" })
+  },
+})
+
+const OrderPublished = objectType({
+  name: "OrderPublished",
+  description: "An order modification publication for the subscriptions",
+  definition(t) {
+    t.nonNull.field("order", { type: Order, description: "The affected order" })
+    t.field("changeType", { type: ChangeType, description: "The type of change" })
   },
 })
 
@@ -251,13 +264,17 @@ const closeOrderShiftMutation = mutationField("closeOrderShift", {
 */
 
 const ordersChangedSubscription = subscriptionField("ordersChanged", {
-  type: nonNull(Order),
-  description: "React to orders change",
+  type: nonNull(OrderPublished),
+  description: "React to orders change, will give back change type if subscribing to all changes",
   args: {
-    changeType: arg({ type: nonNull(ChangeType), description: "The type of change that needs to trigger the push" }),
+    changeType: arg({
+      type: ChangeType,
+      description: "The type of change that needs to trigger the push, defaults to all changes",
+      default: ChangeTypes.ALL,
+    }),
   },
   subscribe: async (_root, { changeType }, { pubsub }) => await pubsub.subscribe(`ORDERS_CHANGED_${changeType}`),
-  resolve: async (payload: IOrder) => payload,
+  resolve: async (payload: IOrderPublished) => payload,
 })
 
 const OrderQuery = [ordersQuery, orderQuery]

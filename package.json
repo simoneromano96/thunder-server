@@ -1,6 +1,6 @@
 {
   "name": "thunder_server",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "GraphQL Thunder backend",
   "main": "./src/index.ts",
   "scripts": {
@@ -33,7 +33,7 @@
     "graphql-scalars": "^1.7.0",
     "graphql-upload": "^11.0.0",
     "ioredis": "^4.19.4",
-    "mercurius": "^6.10.1",
+    "mercurius": "^6.11.0",
     "mercurius-upload": "^1.1.1",
     "mime-types": "^2.1.28",
     "mongoose": "^5.11.13",
