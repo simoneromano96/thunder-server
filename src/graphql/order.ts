@@ -25,6 +25,11 @@ enum ChangeTypes {
   DELETED = "DELETED",
 }
 
+enum Orderings {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
 interface IOrderPublished extends IOrder {
   changeType: ChangeTypes
 }
@@ -74,6 +79,12 @@ const ChangeType = enumType({
   name: "ChangeType",
   description: "The type of change to an object",
   members: Object.values(ChangeTypes),
+})
+
+const Ordering = enumType({
+  name: "Ordering",
+  description: "How to order a specific field",
+  members: Object.values(Orderings),
 })
 
 const OrderInfo = objectType({
@@ -134,8 +145,13 @@ const ordersQuery = queryField("orders", {
       description: "Wether or not we should filter only open orders, defaults on false getting only the active orders",
       default: false,
     }),
+    dateOrdering: arg({
+      type: nonNull(Ordering),
+      description: "Orders by updatedAt date, defaults to ascending",
+      default: Orderings.ASC,
+    }),
   },
-  resolve: async (_root, { table, closed }, _context) => {
+  resolve: async (_root, { table, closed, dateOrdering }, _context) => {
     let query: any = { closed }
     if (table) {
       query = { ...query, table }
@@ -144,7 +160,7 @@ const ordersQuery = queryField("orders", {
     //   query = { ...query, waiter }
     // }
 
-    return await OrderModel.find(query)
+    return await OrderModel.find(query).sort({ updatedAt: dateOrdering.toLowerCase() })
   },
 })
 
