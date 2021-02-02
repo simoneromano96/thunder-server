@@ -37,7 +37,7 @@ steps:
   - name: deploy-docker-api
     commands:
       - cd /home/simone/docker/thunder
-      - docker-compose pull && docker-compose down api && docker-compose up api
+      - docker-compose pull && docker-compose down api && docker-compose up -d api
 
 depends_on:
   - build
