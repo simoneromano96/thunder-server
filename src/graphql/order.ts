@@ -244,14 +244,14 @@ const addOrderInfoMutation = mutationField("addOrderInfo", {
     image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
     svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
   },
-  resolve: async (_root, { id, svgImage, image }, { pubsub }) => {
+  resolve: async (_root, { id, svgImage, image, additionalInfo }, { pubsub }) => {
     // Get the order or throw if not found
     const order = await getRequiredOrder(id)
     // Get image URL
     const saveFileResult: INewFile = await saveImage(svgImage, image)
     const imageUrl = getFileUrl(saveFileResult.filename)
     // New order info
-    const newOrderInfo = { imageUrl } as IOrderInfo
+    const newOrderInfo = { imageUrl, additionalInfo } as IOrderInfo
     // Add a new order info
     order.orderInfoList.push(newOrderInfo)
     // Save and publish edit
