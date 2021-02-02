@@ -19,6 +19,10 @@ export interface IUpload {
   createReadStream: () => ReadStream
 }
 
+/**
+ * Creates a random file name and gets the full path to the upload directory
+ * @param fileExtension The file's extension
+ */
 const getFilepathAndFilename = (fileExtension: string) => {
   const randomId = nanoid()
   const filename = `${randomId}.${fileExtension}`
