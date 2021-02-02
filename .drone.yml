@@ -18,32 +18,33 @@ steps:
       config:
         from_secret: docker_auth_config
 
-# ---
-# kind: pipeline
-# type: ssh
-# name: deploy
-# 
-# server:
-#   host:
-#     from_secret: host
-#   user:
-#     from_secret: user
-#   port:
-#     from_secret: port
-#   ssh_key:
-#     from_secret: ssh_key
-# 
-# steps:
-#   - name: deploy-docker-api
-#     commands:
-#       - cd ~/docker/streams/graphql-todo
-#       - docker-compose pull api && docker-compose stop api && docker-compose rm -f api && docker-compose up api
-# 
-# depends_on:
-#   - build
-# 
-# trigger:
-#   event:
-#     - promote
-#     - rollback
-# 
+---
+kind: pipeline
+type: ssh
+name: deploy
+
+server:
+  host:
+    from_secret: host
+  user:
+    from_secret: user
+  # port:
+  #   from_secret: port
+  ssh_key:
+    from_secret: ssh_key
+
+steps:
+  - name: deploy-docker-api
+    commands:
+      - cd /home/simone/docker/thunder
+      - docker-compose pull && docker-compose down api && docker-compose up api
+
+depends_on:
+  - build
+
+trigger:
+  event:
+    - promote
+    - rollback
+  target:
+    - production
