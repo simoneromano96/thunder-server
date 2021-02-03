@@ -36,6 +36,7 @@ server:
 steps:
   - name: deploy-docker-api
     commands:
+      - docker login https://ghcr.io --username simoneromano@protonmail.ch --password 22b51ab2828e5ebe593b4f16ce610ead0707963e
       - cd /home/simone/docker/thunder
       - docker-compose pull && docker-compose down api && docker-compose up -d api
 
