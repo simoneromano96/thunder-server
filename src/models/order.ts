@@ -1,14 +1,5 @@
 import { Schema, model, Document } from "mongoose"
-
-interface IOrderInfo {
-  // id?: string
-  imageUrl: string
-  completed: boolean
-  waiter?: string
-  additionalInfo?: string | undefined | null
-  createdAt?: Date
-  updatedAt?: Date
-}
+import { IOrderInfo } from "./orderDetails"
 
 interface IOrder {
   // id?: string
@@ -20,33 +11,6 @@ interface IOrder {
 }
 
 interface OrderDocument extends IOrder, Document {}
-
-// interface OrderInfoDocument extends IOrderInfo, Document {}
-
-const OrderInfoSchema = new Schema(
-  {
-    // The image of the order
-    imageUrl: {
-      type: String,
-      required: true,
-    },
-    // If the order has been completed
-    completed: {
-      type: Boolean,
-      default: false,
-    },
-    // Additional info from keyboard input
-    additionalInfo: {
-      type: String,
-    },
-    // TODO
-    waiter: {
-      type: String,
-      // required: true,
-    },
-  },
-  { timestamps: true },
-)
 
 const OrderSchema = new Schema(
   {
@@ -70,13 +34,11 @@ const OrderSchema = new Schema(
       default: false,
     },
     // All the order infos
-    orderInfoList: {
-      type: [OrderInfoSchema],
-    },
+    orderInfoList: [{ type: Schema.Types.ObjectId, ref: "orderInfo" }],
   },
   { timestamps: true },
 )
 
 const OrderModel = model<OrderDocument>("order", OrderSchema)
 
-export { IOrder, IOrderInfo, OrderDocument, OrderModel }
+export { IOrder, OrderDocument, OrderModel }
