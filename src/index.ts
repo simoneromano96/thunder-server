@@ -49,12 +49,12 @@ const main = async () => {
   // DEBUG mode, this will show the queries to the db
   mongoose.set("debug", true)
 
-  /// Connect to the DB
-  await mongoose.connect(config.app.db, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  })
+  // Connect to the DB
+  // await mongoose.connect(config.app.db, {
+  //   useNewUrlParser: true,
+  //   useUnifiedTopology: true,
+  //   useCreateIndex: true,
+  // })
 
   const app = Fastify()
 

@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["createMany"]
+}
+
+model Order {
+  id  String @id
+  table Int
+  closed Boolean @default(false)
+  orderInfoList OrderInfo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deleted   DateTime?
+}
+
+model OrderInfo {
+  id  String @id
+  additionalInfo String?
+  imageUrls String[]
+  served Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order Order @relation(fields: [orderId], references: [id])
+  orderId String
+  deleted   DateTime?
+}
