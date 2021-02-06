@@ -16,9 +16,6 @@ import {
   subscriptionField,
 } from "nexus"
 
-import { OrderDocument, OrderModel, IOrder } from "../models/order"
-import { IOrderInfo } from "../models/orderDetails"
-import { Upload } from "../typings"
 import prisma from "../utils/db"
 import { getFileUrl, INewFile, saveImage } from "../utils/file"
 import { OrderInfo, OrderInfoInput } from "./orderInfo"
@@ -35,22 +32,22 @@ enum Orderings {
   DESC = "DESC",
 }
 
-interface IOrderPublished extends IOrder {
-  changeType: ChangeTypes
-}
+// interface IOrderPublished extends IOrder {
+//   changeType: ChangeTypes
+// }
 
 /**
  * Gets the order, throws if not found
  * @param orderId the order ID
  * @throws Will throw if order is not found
  */
-const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
-  const order = await OrderModel.findById(orderId)
-  if (!order) {
-    throw new Error("Could not find order")
-  }
-  return order
-}
+// const getRequiredOrder = async (orderId: string): Promise<OrderDocument> => {
+//   const order = await OrderModel.findById(orderId)
+//   if (!order) {
+//     throw new Error("Could not find order")
+//   }
+//   return order
+// }
 
 /**
  * Checks if a table has an active order
@@ -66,11 +63,11 @@ const requireAvailableTable = async (table: number) => {
 }
 
 /**
- * @param changeType The channel to publish to
  * @param pubsub The pubsub client
+ * @param changeType The channel to publish to
  * @param order The order to push
  */
-const publishOrderChange = async (changeType: ChangeTypes, pubsub: any, order: OrderDocument) => {
+const publishOrderChange = async (pubsub: any, changeType: ChangeTypes, order: any) => {
   await pubsub.publish({
     topic: `ORDERS_CHANGED_${changeType}`,
     payload: { order },
@@ -129,6 +126,17 @@ const CreateOrderInput = inputObjectType({
   },
 })
 
+const UpdateOrderInput = inputObjectType({
+  name: "UpdateOrderInput",
+  description: "The create order's input",
+  definition(t) {
+    t.nonNull.id("id", { description: "The order's ID" })
+    t.int("table", { description: "The order's table" })
+    t.boolean("closed", { description: "If the current order has been closed" })
+    t.field("orderInfo", { type: OrderInfoInput, description: "The order details" })
+  },
+})
+
 // Create
 const createOrder = mutationField("createOrder", {
   type: nonNull(Order),
@@ -136,22 +144,22 @@ const createOrder = mutationField("createOrder", {
   args: {
     input: nonNull(arg({ type: nonNull(CreateOrderInput), description: "The new order input" })),
   },
-  resolve: async (_root, { input }, _context) => {
+  resolve: async (_root, { input }, { pubsub }) => {
     // Check for available table
     await requireAvailableTable(input.table)
 
     // Save Images to local disk
-    const saveImagePromises = input.orderInfo.svgList.map(async (svgImage) => {
+    const saveImagePromises = input.orderInfo.svgList.map(async (svgImage: string) => {
       // Get image URL
       const saveFileResult: INewFile = await saveImage(svgImage)
       const imageUrl = getFileUrl(saveFileResult.filename)
       return imageUrl
     })
 
-    const imageUrls = await Promise.all(saveImagePromises)
+    const imageUrls: string[] = await Promise.all(saveImagePromises)
 
     // Create Order
-    const order = await prisma.order.create({ data: { id: nanoid(32), table: input.table } })
+    const newOrder = await prisma.order.create({ data: { id: nanoid(32), table: input.table } })
 
     // Create Order Info
     await prisma.orderInfo.create({
@@ -159,16 +167,20 @@ const createOrder = mutationField("createOrder", {
         id: nanoid(32),
         additionalInfo: input.orderInfo.additionalInfo,
         imageUrls,
-        orderId: order.id,
+        orderId: newOrder.id,
       },
     })
 
     // Return order
-    return await prisma.order.findUnique({
-      where: { id: order.id },
+    const order = await prisma.order.findUnique({
+      where: { id: newOrder.id },
       include: { orderInfoList: true },
       rejectOnNotFound: true,
     })
+
+    await publishOrderChange(pubsub, ChangeTypes.CREATED, order)
+
+    return order
   },
 })
 
@@ -182,8 +194,16 @@ const readOrders = queryField("orders", {
       description: "Wether or not we should filter only open orders, defaults on false getting only the active orders",
       default: false,
     }),
-    orderByCreated: arg({ type: Ordering, description: "Optionally order by createdAt field" }),
-    orderByUpdated: arg({ type: Ordering, description: "Optionally order by updatedAt field" }),
+    orderByCreated: arg({
+      type: Ordering,
+      description: "Optionally order by createdAt field, cannot specify both orderByCreated and orderByUpdated",
+      // default: Orderings.ASC,
+    }),
+    orderByUpdated: arg({
+      type: Ordering,
+      description: "Optionally order by updatedAt field, cannot specify both orderByCreated and orderByUpdated",
+      // default: Orderings.ASC,
+    }),
   },
   resolve: async (_root, { table, closed, orderByCreated, orderByUpdated }, _context) =>
     await prisma.order.findMany({
@@ -193,80 +213,43 @@ const readOrders = queryField("orders", {
     }),
 })
 
-/*
-const ordersQuery = queryField("orders", {
-  type: list(nonNull(Order)),
-  description: "Returns the current orders",
-  args: {
-    table: intArg({ description: "The order's table" }),
-    // waiter: stringArg({ description: "The order's waiter" }),
-    closed: booleanArg({
-      description: "Wether or not we should filter only open orders, defaults on false getting only the active orders",
-      default: false,
-    }),
-    dateOrdering: arg({
-      type: nonNull(Ordering),
-      description: "Orders by updatedAt date, defaults to ascending",
-      default: Orderings.ASC,
-    }),
-  },
-  resolve: async (_root, { table, closed, dateOrdering }, _context) => {
-    let query: any = { closed }
-    if (table) {
-      query = { ...query, table }
-    }
-    // if (waiter) {
-    //   query = { ...query, waiter }
-    // }
-
-    return await OrderModel.find(query).sort({ updatedAt: dateOrdering.toLowerCase() })
-  },
-})
-*/
-
-/*
-const orderQuery = queryField("order", {
+const readOrder = queryField("order", {
   type: nonNull(Order),
   description: "Returns an order by its ID",
   args: {
-    id: nonNull(idArg({ description: "The order's ID" })),
+    id: idArg({ description: "The order's ID" }),
   },
-  resolve: async (_root, { id }, _context) => await getRequiredOrder(id),
+  resolve: async (_root, { id }, _context) =>
+    await prisma.order.findUnique({
+      where: { id },
+      include: { orderInfoList: true },
+      rejectOnNotFound: true,
+    }),
 })
-*/
 
-/*
-const newOrderMutation = mutationField("newOrder", {
+// Update
+const updateOrder = mutationField("updateOrder", {
   type: nonNull(Order),
-  description: "Creates a new order",
+  description: "Updated an order",
   args: {
-    table: nonNull(intArg({ description: "The new order's table, must not have a currently active order" })),
-    // waiter: stringArg({ description: "The new order's waiter" }),
-    additionalInfo: stringArg({ description: "The new order's optional additional informations" }),
-    image: arg({ description: "The new order's image, this or svgImage must be provided", type: Upload }),
-    svgImage: stringArg({ description: "The new order's svg image, this or image must be provided" }),
+    input: nonNull(arg({ type: UpdateOrderInput, description: "The update order input" })),
   },
-  resolve: async (_root, { svgImage, image, table, additionalInfo }, { pubsub }) => {
-    // Check that the table has no active orders
-    await requireAvailableTable(table)
-    // Get image URL
-    const saveFileResult: INewFile = await saveImage(svgImage, image)
-    const imageUrl = getFileUrl(saveFileResult.filename)
-    // Create order info
-    const orderInfoList = [
-      {
-        imageUrl,
-        additionalInfo,
+  resolve: async (_root, { input }, { pubsub }) => {
+    const { id, ...data } = input
+    await prisma.order.update({
+      where: {
+        id,
       },
-    ]
-    // Create and save the new order
-    const order = new OrderModel({ table, orderInfoList })
-    const newOrder = await order.save()
-    await publishOrderChange(ChangeTypes.CREATED, pubsub, order)
-    return newOrder
+      data,
+    })
+
+    const order = await prisma.order.findUnique({ where: { id: input.id }, include: { orderInfoList: true } })
+
+    await publishOrderChange(pubsub, ChangeTypes.UPDATED, order)
+
+    return order
   },
 })
-*/
 
 /*
 const editOrderMutation = mutationField("editOrder", {
@@ -373,8 +356,8 @@ const OrderSubscription = [ordersChangedSubscription]
 export { OrderQuery, OrderMutation, OrderSubscription }
 */
 
-const OrderQuery = [readOrders]
+const OrderQuery = [readOrders, readOrder]
 
-const OrderMutation = [createOrder]
+const OrderMutation = [createOrder, updateOrder]
 
 export { OrderQuery, OrderMutation }

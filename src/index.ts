@@ -17,7 +17,7 @@ import connectRedis from "connect-redis"
 // FS Utils
 import { promises } from "fs"
 
-import mongoose from "mongoose"
+// import mongoose from "mongoose"
 
 import { schema } from "./schema"
 import config from "./config"
@@ -47,7 +47,7 @@ const main = async () => {
   const RedisStore = connectRedis(session as any)
 
   // DEBUG mode, this will show the queries to the db
-  mongoose.set("debug", true)
+  // mongoose.set("debug", true)
 
   // Connect to the DB
   // await mongoose.connect(config.app.db, {

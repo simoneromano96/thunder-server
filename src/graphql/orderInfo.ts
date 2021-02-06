@@ -49,8 +49,8 @@ const OrderInfo = objectType({
 //   resolve: async (_root, { id }, _context) => {},
 // })
 
-const OrderInfoQuery = []
-
-const OrderInfoMutation = []
-
-export { OrderInfoQuery, OrderInfoMutation, OrderInfo, OrderInfoInput }
+// const OrderInfoQuery = []
+// 
+// const OrderInfoMutation = []
+// 
+// export { OrderInfoQuery, OrderInfoMutation, OrderInfo, OrderInfoInput }
