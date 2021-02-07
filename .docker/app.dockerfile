@@ -17,9 +17,6 @@ RUN find . -name "*.js.map" -type f -delete
 # Remove generated folder
 RUN rm -rf ./dist/generated
 
-# Add prisma schema
-COPY ./prisma ./dist/prisma
-
 RUN ls -al ./dist
 
 FROM node:alpine as production
@@ -36,6 +33,10 @@ RUN apk add python3 make g++
 
 RUN npm i
 
+# Dist
 COPY --from=build /app/dist ./dist
+
+# Add prisma schema
+COPY ./prisma ./prisma
 
 CMD [ "npm", "start" ]
