@@ -6,6 +6,7 @@ import path from "path"
 import { pipeline } from "stream/promises"
 
 import config from "../config"
+import { optimizeSvg } from "./optimizeSvg"
 
 export interface INewFile {
   filepath: string
@@ -82,7 +83,8 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
   if (image) {
     saveFileResult = await saveFile(image)
   } else if (svgImage) {
-    saveFileResult = await saveStringFile(svgImage, "svg")
+    const optimized = await optimizeSvg(svgImage)
+    saveFileResult = await saveStringFile(optimized, "svg")
   }
   return saveFileResult
 }
