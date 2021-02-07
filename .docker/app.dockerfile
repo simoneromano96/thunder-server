@@ -17,6 +17,9 @@ RUN find . -name "*.js.map" -type f -delete
 # Remove generated folder
 RUN rm -rf ./dist/generated
 
+# Add prisma schema
+COPY ./prisma ./dist/prisma
+
 RUN ls -al ./dist
 
 FROM node:alpine as production
