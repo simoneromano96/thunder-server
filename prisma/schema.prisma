@@ -25,7 +25,7 @@ model OrderInfo {
   id  String @id
   additionalInfo String?
   imageUrls String[]
-  served Boolean @default(false)
+  completed Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   order Order @relation(fields: [orderId], references: [id])

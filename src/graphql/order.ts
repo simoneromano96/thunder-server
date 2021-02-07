@@ -68,6 +68,7 @@ const requireAvailableTable = async (table: number) => {
  * @param order The order to push
  */
 const publishOrderChange = async (pubsub: any, changeType: ChangeTypes, order: any) => {
+  console.log("publishing order change")
   await pubsub.publish({
     topic: `ORDERS_CHANGED_${changeType}`,
     payload: { order },
@@ -131,9 +132,9 @@ const UpdateOrderInput = inputObjectType({
   description: "The create order's input",
   definition(t) {
     t.nonNull.id("id", { description: "The order's ID" })
-    t.int("table", { description: "The order's table" })
-    t.boolean("closed", { description: "If the current order has been closed" })
-    t.field("orderInfo", { type: OrderInfoInput, description: "The order details" })
+    t.int("table", { description: "The new order's table, should never be used" })
+    t.boolean("closed", { description: "If the current order must be closed" })
+    t.field("orderInfoList", { type: list(OrderInfoInput), description: "The new order details" })
   },
 })
 
@@ -205,48 +206,132 @@ const readOrders = queryField("orders", {
       // default: Orderings.ASC,
     }),
   },
-  resolve: async (_root, { table, closed, orderByCreated, orderByUpdated }, _context) =>
-    await prisma.order.findMany({
-      where: { table, closed },
-      orderBy: { createdAt: orderByCreated?.toLocaleLowerCase(), updatedAt: orderByUpdated?.toLocaleLowerCase() },
+  resolve: async (_root, { table, closed, orderByCreated, orderByUpdated }, _context) => {
+    const orders = await prisma.order.findMany({
+      where: { table: table ?? undefined, closed: closed ?? undefined },
+      orderBy: {
+        createdAt: (orderByCreated?.toLocaleLowerCase() as "asc" | "desc") ?? undefined,
+        updatedAt: (orderByUpdated?.toLocaleLowerCase() as "asc" | "desc") ?? undefined,
+      },
       include: { orderInfoList: true },
-    }),
+    })
+    return orders
+  },
 })
 
 const readOrder = queryField("order", {
   type: nonNull(Order),
   description: "Returns an order by its ID",
   args: {
-    id: idArg({ description: "The order's ID" }),
+    id: nonNull(idArg({ description: "The order's ID" })),
   },
-  resolve: async (_root, { id }, _context) =>
-    await prisma.order.findUnique({
+  resolve: async (_root, { id }, _context) => {
+    const order = await prisma.order.findUnique({
       where: { id },
       include: { orderInfoList: true },
       rejectOnNotFound: true,
-    }),
+    })
+    return order
+  },
 })
 
 // Update
 const updateOrder = mutationField("updateOrder", {
   type: nonNull(Order),
-  description: "Updated an order",
+  description: "Updates an order",
   args: {
-    input: nonNull(arg({ type: UpdateOrderInput, description: "The update order input" })),
+    input: nonNull(
+      arg({
+        type: UpdateOrderInput,
+        description: "The update order input, note that currently the orderInfoList is ignored",
+      }),
+    ),
   },
   resolve: async (_root, { input }, { pubsub }) => {
-    const { id, ...data } = input
+    const { id, ...updateInfo } = input
+
     await prisma.order.update({
       where: {
         id,
       },
-      data,
+      data: {
+        closed: updateInfo.closed ?? undefined,
+        table: updateInfo.table ?? undefined,
+      },
     })
 
-    const order = await prisma.order.findUnique({ where: { id: input.id }, include: { orderInfoList: true } })
+    const order = await prisma.order.findUnique({
+      where: { id: input.id },
+      include: { orderInfoList: true },
+      rejectOnNotFound: true,
+    })
 
     await publishOrderChange(pubsub, ChangeTypes.UPDATED, order)
 
+    return order
+  },
+})
+
+const addOrderInfo = mutationField("addOrderInfo", {
+  type: nonNull(Order),
+  description: "Adds order info to an order",
+  args: {
+    id: nonNull(idArg({ description: "The ID of the order to edit" })),
+    orderInfoInput: nonNull(arg({ type: OrderInfoInput, description: "The order info to add to the order" })),
+  },
+  resolve: async (_root, { id, orderInfoInput }, { pubsub }) => {
+    const { svgList, ...orderInfoList } = orderInfoInput
+    // Save Images to local disk
+    const saveImagePromises = svgList.map(async (svgImage: string) => {
+      // Get image URL
+      const saveFileResult: INewFile = await saveImage(svgImage)
+      const imageUrl = getFileUrl(saveFileResult.filename)
+      return imageUrl
+    })
+
+    const imageUrls: string[] = await Promise.all(saveImagePromises)
+
+    await prisma.orderInfo.create({
+      data: {
+        id: nanoid(32),
+        orderId: id,
+        additionalInfo: orderInfoList.additionalInfo ?? undefined,
+        completed: orderInfoList.completed ?? undefined,
+        imageUrls,
+      },
+    })
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { orderInfoList: true },
+      rejectOnNotFound: true,
+    })
+
+    await publishOrderChange(pubsub, ChangeTypes.CREATED, order)
+
+    return order
+  },
+})
+
+// Delete
+const deleteOrder = mutationField("deleteOrder", {
+  type: nonNull(Order),
+  description: "Deletes an order",
+  args: {
+    id: nonNull(idArg({ description: "The ID of the order to delete" })),
+  },
+  resolve: async (_root, { id }, { pubsub }) => {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { orderInfoList: true },
+      rejectOnNotFound: true,
+    })
+
+    const deleteOrder = prisma.order.delete({ where: { id } })
+    const deleteOrderInfos = prisma.orderInfo.deleteMany({ where: { orderId: id } })
+    await prisma.$transaction([deleteOrderInfos, deleteOrder])
+
+    await publishOrderChange(pubsub, ChangeTypes.DELETED, order)
     return order
   },
 })
@@ -330,8 +415,7 @@ const closeOrderShiftMutation = mutationField("closeOrderShift", {
 })
 */
 
-/*
-const ordersChangedSubscription = subscriptionField("ordersChanged", {
+const ordersChanged = subscriptionField("ordersChanged", {
   type: nonNull(OrderPublished),
   description: "React to orders change, will give back change type if subscribing to all changes",
   args: {
@@ -341,23 +425,18 @@ const ordersChangedSubscription = subscriptionField("ordersChanged", {
       default: ChangeTypes.ALL,
     }),
   },
-  subscribe: async (_root, { changeType }, { pubsub }) => await pubsub.subscribe(`ORDERS_CHANGED_${changeType}`),
-  resolve: async (payload: IOrderPublished) => payload,
+  subscribe: async (_root, { changeType }, { pubsub }) => {
+    return await pubsub.subscribe(`ORDERS_CHANGED_${changeType}`)
+  },
+  resolve: async (payload) => {
+    return payload
+  },
 })
-*/
-
-/*
-const OrderQuery = [ordersQuery, orderQuery]
-
-const OrderMutation = [newOrderMutation, editOrderMutation, addOrderInfoMutation]
-
-const OrderSubscription = [ordersChangedSubscription]
-
-export { OrderQuery, OrderMutation, OrderSubscription }
-*/
 
 const OrderQuery = [readOrders, readOrder]
 
-const OrderMutation = [createOrder, updateOrder]
+const OrderMutation = [createOrder, updateOrder, addOrderInfo, deleteOrder]
 
-export { OrderQuery, OrderMutation }
+const OrderSubscription = [ordersChanged]
+
+export { OrderQuery, OrderMutation, OrderSubscription }

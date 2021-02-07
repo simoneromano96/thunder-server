@@ -6,7 +6,7 @@ const OrderInfoInput = inputObjectType({
   description: "The order's info input",
   definition(t) {
     t.string("additionalInfo", { description: "The order's additional info" })
-    t.boolean("served", { description: "If the current order info has been served" })
+    t.boolean("completed", { description: "If the current order info has been served/completed" })
     // t.string("imageUrl", { description: "The order's uploaded image, actually contains all the order info" })
     t.nonNull.list.nonNull.string("svgList", {
       description: "The order's vectors that actually contains all the order info",
@@ -20,7 +20,7 @@ const OrderInfo = objectType({
   definition(t) {
     t.id("id", { description: "The order info's unique ID" })
     t.string("additionalInfo", { description: "The order's additional info" })
-    t.nonNull.boolean("served", { description: "If the current order info has been served" })
+    t.nonNull.boolean("completed", { description: "If the current order info has been served/completed" })
     t.nonNull.list.string("imageUrls", {
       description: "The order's uploaded image, actually contains all the order info",
     })
@@ -53,4 +53,4 @@ const OrderInfo = objectType({
 // 
 // const OrderInfoMutation = []
 // 
-// export { OrderInfoQuery, OrderInfoMutation, OrderInfo, OrderInfoInput }
+export { OrderInfo, OrderInfoInput }
