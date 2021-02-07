@@ -5,8 +5,9 @@
   "main": "./src/index.ts",
   "scripts": {
     "dev": "ts-node-dev --transpile-only --no-notify ./src/index.ts",
-    "start": "node ./dist/index.js",
+    "start": "npx prisma migrate deploy --preview-feature && node ./dist/index.js",
     "build": "npx prisma generate && tsc",
+    "migrate": "npx prisma migrate deploy --preview-feature",
     "lint": "eslint ./**/*.ts",
     "check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -39,11 +40,13 @@
     "mime-types": "^2.1.28",
     "nanoid": "^3.1.20",
     "nexus": "^1.0.0",
-    "paseto.js": "^0.1.6"
+    "paseto.js": "^0.1.6",
+    "svgo": "^1.3.2"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",
     "@types/mime-types": "^2.1.0",
+    "@types/svgo": "^1.3.3",
     "@types/ws": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
@@ -51,6 +54,7 @@
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
+    "prisma": "^2.16.0",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.1.1",
     "typescript": "^4.1.3"

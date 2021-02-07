@@ -2,10 +2,13 @@ import { nanoid } from "nanoid"
 import { extension as getExtension } from "mime-types"
 import { createWriteStream, promises, ReadStream } from "fs"
 import path from "path"
+import svgo from "svgo"
 // @ts-ignore: @types/node is not yet compatible with node 15
 import { pipeline } from "stream/promises"
 
 import config from "../config"
+
+const svgOptimizer = new svgo()
 
 export interface INewFile {
   filepath: string
@@ -82,7 +85,8 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
   if (image) {
     saveFileResult = await saveFile(image)
   } else if (svgImage) {
-    saveFileResult = await saveStringFile(svgImage, "svg")
+    const optimized = await svgOptimizer.optimize(svgImage)
+    saveFileResult = await saveStringFile(optimized.data, "svg")
   }
   return saveFileResult
 }
