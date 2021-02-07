@@ -21,7 +21,7 @@ steps:
 ---
 kind: pipeline
 type: ssh
-name: deploy
+name: deploy-production
 
 server:
   host:
@@ -53,7 +53,7 @@ trigger:
 ---
 kind: pipeline
 type: ssh
-name: deploy
+name: deploy-beta
 
 server:
   host:
