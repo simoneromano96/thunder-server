@@ -54,7 +54,7 @@ enum Orderings {
  * @param table The table to find
  * @throws Will throw if the table is occupied
  */
-const requireAvailableTable = async (table: number) => {
+const requireAvailableTable = async (table: string) => {
   const activeOrder = await prisma.order.findFirst({ where: { table, closed: false } })
   // const activeOrder = await OrderModel.findOne({ table, closed: false })
   if (activeOrder !== null) {
@@ -96,7 +96,7 @@ const Order = objectType({
   description: "An order object",
   definition(t) {
     t.id("id", { description: "The order's unique ID" })
-    t.nonNull.int("table", { description: "The table of the order" })
+    t.nonNull.string("table", { description: "The table of the order" })
     // t.string("waiter", { description: "The waiter that made the order" })
     // t.list.string("imageUrls", { description: "Uploaded image urls" })
     // t.string("additionalInfo", { description: "The order's additional info" })
@@ -121,7 +121,7 @@ const CreateOrderInput = inputObjectType({
   name: "CreateOrderInput",
   description: "The create order's input",
   definition(t) {
-    t.nonNull.int("table", { description: "The order's table" })
+    t.nonNull.string("table", { description: "The order's table" })
     t.boolean("closed", { description: "If the current order has been closed" })
     t.nonNull.field("orderInfo", { type: OrderInfoInput, description: "The order details" })
   },
@@ -132,7 +132,7 @@ const UpdateOrderInput = inputObjectType({
   description: "The create order's input",
   definition(t) {
     t.nonNull.id("id", { description: "The order's ID" })
-    t.int("table", { description: "The new order's table, should never be used" })
+    t.string("table", { description: "The new order's table, should never be used" })
     t.boolean("closed", { description: "If the current order must be closed" })
     t.field("orderInfoList", { type: list(OrderInfoInput), description: "The new order details" })
   },
