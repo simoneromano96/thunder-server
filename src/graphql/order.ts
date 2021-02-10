@@ -190,7 +190,7 @@ const readOrders = queryField("orders", {
   type: nonNull(list(Order)),
   description: "Returns all the current orders",
   args: {
-    table: intArg({ description: "The order's table" }),
+    table: stringArg({ description: "The order's table" }),
     closed: booleanArg({
       description: "Wether or not we should filter only open orders, defaults on false getting only the active orders",
       default: false,
