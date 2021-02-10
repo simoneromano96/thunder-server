@@ -13,7 +13,7 @@ generator client {
 
 model Order {
   id  String @id
-  table Int
+  table String
   closed Boolean @default(false)
   orderInfoList OrderInfo[]
   createdAt DateTime @default(now())
