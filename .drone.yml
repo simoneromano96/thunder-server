@@ -80,3 +80,35 @@ trigger:
     exclude:
       - promote
       - rollback
+
+---
+kind: pipeline
+type: ssh
+name: deploy-production-together
+
+server:
+  host:
+    from_secret: host
+  user:
+    from_secret: user
+  # port:
+  #   from_secret: port
+  ssh_key:
+    from_secret: ssh_key
+
+steps:
+  - name: deploy-production-together-api
+    commands:
+      - docker login https://ghcr.io --username simoneromano@protonmail.ch --password 22b51ab2828e5ebe593b4f16ce610ead0707963e
+      - cd /home/simone/docker/thunder/together-firenze
+      - docker-compose pull && docker-compose up --detach --build api
+
+depends_on:
+  - build
+
+trigger:
+  event:
+    - promote
+    - rollback
+  target:
+    - production-together
