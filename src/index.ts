@@ -3,8 +3,8 @@ import Fastify from "fastify"
 import cors from "fastify-cors"
 import helmet from "fastify-helmet"
 // Session
-import cookie from "fastify-cookie"
-import session from "fastify-session"
+// import cookie from "fastify-cookie"
+// import session from "fastify-session"
 // Static files server
 import fastifyStatic from "fastify-static"
 // Graphql Server

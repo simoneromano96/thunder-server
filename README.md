@@ -7,6 +7,6 @@ Before running: `cp .env.local .env`
 
 Sync DB with prisma schema and generate client: `npx prisma db push --preview-feature`
 
-After editing the schema: `npx prisma migrate dev --name init --preview-feature`
+After editing the schema: `npx prisma migrate dev --name migration-name --preview-feature`
 
 Create the client: `npx prisma generate`
