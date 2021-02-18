@@ -1,6 +1,6 @@
 {
   "name": "thunder_server",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "GraphQL Thunder backend",
   "main": "./src/index.ts",
   "scripts": {
