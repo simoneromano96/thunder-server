@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client"
-import { arg, idArg, inputObjectType, mutationField, nonNull, objectType, queryField } from "nexus"
+import { inputObjectType, objectType } from "nexus"
+import { Upload } from "../typings"
 
 const OrderInfoInput = inputObjectType({
   name: "OrderInfoInput",
@@ -12,7 +12,8 @@ const OrderInfoInput = inputObjectType({
       description:
         "The order's vectors that actually contains all the order info, this or uploadImageList must be defined",
     })
-    t.list.nonNull.upload("uploadImageList", {
+    t.list.nonNull.field("uploadImageList", {
+      type: Upload,
       description: "The order's images that actually contains all the order info, this or svgList must be defined",
     })
   },
