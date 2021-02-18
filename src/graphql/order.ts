@@ -13,6 +13,7 @@ import {
   stringArg,
   subscriptionField,
 } from "nexus"
+import { Upload } from "../typings"
 
 import prisma from "../utils/db"
 import { getFileUrl, INewFile, IUpload, saveImage } from "../utils/file"
@@ -142,12 +143,19 @@ const createOrder = mutationField("createOrder", {
   description: "Creates a new order",
   args: {
     input: nonNull(arg({ type: nonNull(CreateOrderInput), description: "The new order input" })),
+    uploadImageList: list(
+      arg({
+        type: Upload,
+        description:
+          "The order's images that actually contains all the order info, this or input.orderInfo.svgList must be defined",
+      }),
+    ),
   },
-  resolve: async (_root, { input }, { pubsub }) => {
+  resolve: async (_root, { input, uploadImageList }, { pubsub }) => {
     // Check for available table
     await requireAvailableTable(input.table)
 
-    const { svgList, uploadImageList } = input.orderInfo
+    const { svgList } = input.orderInfo
     if (!svgList && !uploadImageList) {
       throw new Error("Must have svgList or uploadImageList")
     }
@@ -292,9 +300,16 @@ const addOrderInfo = mutationField("addOrderInfo", {
   args: {
     id: nonNull(idArg({ description: "The ID of the order to edit" })),
     orderInfoInput: nonNull(arg({ type: OrderInfoInput, description: "The order info to add to the order" })),
+    uploadImageList: list(
+      arg({
+        type: Upload,
+        description:
+          "The order's images that actually contains all the order info, this or orderInfoInput.svgList must be defined",
+      }),
+    ),
   },
-  resolve: async (_root, { id, orderInfoInput }, { pubsub }) => {
-    const { svgList, uploadImageList, ...orderInfoList } = orderInfoInput
+  resolve: async (_root, { id, orderInfoInput, uploadImageList }, { pubsub }) => {
+    const { svgList, ...orderInfoList } = orderInfoInput
     if (!svgList && !uploadImageList) {
       throw new Error("Must have svgList or uploadImageList")
     }

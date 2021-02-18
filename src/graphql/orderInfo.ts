@@ -12,10 +12,10 @@ const OrderInfoInput = inputObjectType({
       description:
         "The order's vectors that actually contains all the order info, this or uploadImageList must be defined",
     })
-    t.list.nonNull.field("uploadImageList", {
-      type: Upload,
-      description: "The order's images that actually contains all the order info, this or svgList must be defined",
-    })
+    // t.list.nonNull.field("uploadImageList", {
+    //   type: Upload,
+    //   description: "The order's images that actually contains all the order info, this or svgList must be defined",
+    // })
   },
 })
 
