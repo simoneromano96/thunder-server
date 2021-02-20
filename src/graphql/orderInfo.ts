@@ -1,5 +1,5 @@
 import { inputObjectType, objectType } from "nexus"
-import { Upload } from "../typings"
+// import { Upload } from "../typings"
 
 const OrderInfoInput = inputObjectType({
   name: "OrderInfoInput",
