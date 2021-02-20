@@ -7,9 +7,10 @@ steps:
     image: plugins/docker
     settings:
       registry: ghcr.io
-      username: simoneromano96
+      username: 
+        from_secret: github_username
       password: 
-        from_secret: token
+        from_secret: github_token
       repo: ghcr.io/simoneromano96/thunder/api
       context: .
       dockerfile: ./.docker/app.dockerfile
@@ -35,8 +36,13 @@ server:
 
 steps:
   - name: deploy-production-api
+    environment:
+      GITHUB_USERNAME:
+        from_secret: github_username
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
-      - docker login https://ghcr.io --username simoneromano@protonmail.ch --password 22b51ab2828e5ebe593b4f16ce610ead0707963e
+      - docker login https://ghcr.io --username $GITHUB_USERNAME --password $GITHUB_TOKEN
       - cd /home/simone/docker/thunder/prod
       - docker-compose pull && docker-compose up --detach --build api
 
@@ -67,8 +73,13 @@ server:
 
 steps:
   - name: deploy-beta-api
+    environment:
+      GITHUB_USERNAME:
+        from_secret: github_username
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
-      - docker login https://ghcr.io --username simoneromano@protonmail.ch --password 22b51ab2828e5ebe593b4f16ce610ead0707963e
+      - docker login https://ghcr.io --username $GITHUB_USERNAME --password $GITHUB_TOKEN
       - cd /home/simone/docker/thunder/beta
       - docker-compose pull && docker-compose up --detach --build api
 
@@ -98,8 +109,13 @@ server:
 
 steps:
   - name: deploy-production-together-api
+    environment:
+      GITHUB_USERNAME:
+        from_secret: github_username
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
-      - docker login https://ghcr.io --username simoneromano@protonmail.ch --password 22b51ab2828e5ebe593b4f16ce610ead0707963e
+      - docker login https://ghcr.io --username $GITHUB_USERNAME --password $GITHUB_TOKEN
       - cd /home/simone/docker/thunder/together-firenze
       - docker-compose pull && docker-compose up --detach --build api
 
