@@ -351,7 +351,7 @@ const addOrderInfo = mutationField("addOrderInfo", {
       rejectOnNotFound: true,
     })
 
-    await publishOrderChange(pubsub, ChangeTypes.CREATED, order)
+    await publishOrderChange(pubsub, ChangeTypes.UPDATED, order)
 
     return order
   },
