@@ -19,11 +19,11 @@ steps:
       config:
         from_secret: docker_auth_config
 
-trigger:
-  event:
-    exclude:
-      - promote
-      - rollback
+# trigger:
+#   event:
+#     exclude:
+#       - promote
+#       - rollback
 
 ---
 kind: pipeline
