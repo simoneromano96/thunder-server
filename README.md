@@ -34,3 +34,7 @@ Promotion targets:
 * production
 
 * production-together
+
+* [ ] Autenticazione e sistema licenze
+
+* [ ] Personalizzazioni dashboard (colori)
