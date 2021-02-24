@@ -27,7 +27,7 @@ model Licence {
   id  String @id
   key String @unique
   email String @unique
-  remainingSeats Int
+  remainingSeats Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
