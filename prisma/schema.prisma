@@ -43,8 +43,8 @@ model Order {
   updatedAt DateTime @updatedAt
   deleted   DateTime?
 
-  user User @relation(fields: [userId], references: [id])
-  userId String
+  user User? @relation(fields: [userId], references: [id])
+  userId String?
 }
 
 model OrderInfo {
