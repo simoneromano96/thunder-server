@@ -7,56 +7,58 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["createMany"]
 }
 
 model User {
-  id  String @id
+  id       String @id
   username String @unique
   password String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  licence Licence @relation(fields: [licenceId], references: [id])
+  licence   Licence @relation(fields: [licenceId], references: [id])
   licenceId String
+  Order     Order[]
 }
 
 model Licence {
-  id  String @id
-  key String @unique
-  email String @unique
+  id             String @id
+  key            String @unique
+  email          String @unique
   remainingSeats Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  User      User[]
 }
 
 model Order {
-  id  String @id
-  table String
-  closed Boolean @default(false)
+  id            String      @id
+  table         String
+  closed        Boolean     @default(false)
   orderInfoList OrderInfo[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deleted   DateTime?
 
-  user User? @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
   userId String?
 }
 
 model OrderInfo {
-  id  String @id
+  id             String   @id
   additionalInfo String?
-  imageUrls String[]
-  completed Boolean @default(false)
+  imageUrls      String[]
+  completed      Boolean  @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deleted   DateTime?
 
-  order Order @relation(fields: [orderId], references: [id])
+  order   Order  @relation(fields: [orderId], references: [id])
   orderId String
 }
