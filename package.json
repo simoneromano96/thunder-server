@@ -36,7 +36,7 @@
     "fastify-static": "^4.0.1",
     "graphql-scalars": "^1.7.1",
     "graphql-upload": "^11.0.0",
-    "ioredis": "^4.22.0",
+    "ioredis": "^4.23.0",
     "mercurius": "^7.1.0",
     "mercurius-upload": "^1.1.1",
     "mime-types": "^2.1.29",
@@ -56,7 +56,7 @@
     "prettier": "^2.2.1",
     "prisma": "^2.17.0",
     "ts-node": "^9.1.1",
-    "ts-node-dev": "^1.1.1",
+    "ts-node-dev": "^1.1.6",
     "typescript": "^4.2.2"
   }
 }
