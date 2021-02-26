@@ -19,8 +19,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  licence   Licence @relation(fields: [licenceId], references: [id])
-  licenceId String
+  licence   Licence? @relation(fields: [licenceId], references: [id])
+  licenceId String?
   Order     Order[]
 }
 
