@@ -24,7 +24,6 @@
   "homepage": "https://github.com/simoneromano96/thunder/blob/main/README.md",
   "dependencies": {
     "@prisma/client": "^2.23.0",
-    "@types/node": "^15.6.0",
     "argon2": "^0.27.2",
     "connect-redis": "^5.2.0",
     "date-fns": "^2.21.3",
@@ -48,6 +47,7 @@
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",
     "@types/mime-types": "^2.1.0",
+    "@types/node": "^15.6.0",
     "@types/ws": "^7.4.4",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",

@@ -2,7 +2,6 @@ import { nanoid } from "nanoid"
 import { extension as getExtension } from "mime-types"
 import { createWriteStream, promises, ReadStream } from "fs"
 import path from "path"
-// @ts-ignore: @types/node is not yet compatible with node 15
 import { pipeline } from "stream/promises"
 
 import config from "../config"
