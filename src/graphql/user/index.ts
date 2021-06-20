@@ -1,5 +1,5 @@
-import { login } from "./mutations";
-import { currentUser } from "./queries";
+import { login } from "./mutations"
+import { currentUser } from "./queries"
 
 const UserQuery = [currentUser]
 

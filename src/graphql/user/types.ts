@@ -1,6 +1,6 @@
-import { objectType } from "nexus";
+import { objectType } from "nexus"
 
-import { Licence } from "../licence/types";
+import { Licence } from "../licence/types"
 
 /*
 model User {
@@ -24,5 +24,5 @@ export const User = objectType({
     t.nonNull.field("createdAt", { type: "DateTime", description: "When the user has been created" })
     t.nonNull.field("updatedAt", { type: "DateTime", description: "When the user has been last updated" })
     t.field("licence", { type: Licence, description: "The user's activated licence" })
-  }
+  },
 })

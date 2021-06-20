@@ -105,10 +105,10 @@ const main = async () => {
     // graphiql: "playground",
     prefix: config.app.apiPrefix,
     // Expose request and reply objects in context
-    context: async (request, reply) => {
+    context: async (request, _reply) => {
       let context
       try {
-        const authorizationHeader = request.headers.authorization;
+        const authorizationHeader = request.headers.authorization
         if (authorizationHeader !== undefined) {
           const token = authorizationHeader.replace("Bearer ", "")
           const payload = await verifyToken(token)
