@@ -122,6 +122,8 @@ const main = async () => {
   })
 
   await app.listen(config.app.port, "0.0.0.0")
+
+  console.log("Server listening at: " + config.app.port)
 }
 
 main()
