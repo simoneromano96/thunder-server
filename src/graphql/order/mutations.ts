@@ -1,13 +1,12 @@
 import { nanoid } from "nanoid"
 import { arg, idArg, list, mutationField, nonNull } from "nexus"
 
-import { requireAvailableTable, publishOrderChange, getRequiredOrder } from "./api"
+import { requireAvailableTable, publishOrderChange, getRequiredOrder, saveImages } from "./api"
 import { Order, CreateOrderInput, UpdateOrderInput, ChangeTypes } from "./types"
 
+import { OrderInfoInput } from "../orderInfo"
 import { Upload } from "../../typings"
 import prisma from "../../utils/db"
-import { getFileUrl, INewFile, IUpload, saveImage } from "../../utils/file"
-import { OrderInfoInput } from "../orderInfo"
 
 // Create
 export const createOrder = mutationField("createOrder", {
@@ -27,29 +26,8 @@ export const createOrder = mutationField("createOrder", {
     // Check for available table
     await requireAvailableTable(input.table)
 
-    const { svgList } = input.orderInfo
-    if (!svgList && !uploadImageList) {
-      throw new Error("Must have svgList or uploadImageList")
-    }
-    let saveImagePromises: Array<Promise<string>> = []
-    if (svgList !== null && svgList !== undefined) {
-      // Save Images to local disk
-      saveImagePromises = svgList.map(async (svgImage: string) => {
-        // Get image URL
-        const saveFileResult: INewFile = await saveImage(svgImage)
-        const imageUrl = getFileUrl(saveFileResult.filename)
-        return imageUrl
-      })
-    }
-    if (uploadImageList !== null && uploadImageList !== undefined) {
-      // Save Images to local disk
-      saveImagePromises = uploadImageList.map(async (image: Promise<IUpload>) => {
-        // Get image URL
-        const saveFileResult: INewFile = await saveImage(undefined, image)
-        const imageUrl = getFileUrl(saveFileResult.filename)
-        return imageUrl
-      })
-    }
+    const { svgList, b64list } = input.orderInfo
+    const saveImagePromises: Array<Promise<string>> = saveImages(svgList, uploadImageList, b64list)
 
     const imageUrls: string[] = await Promise.all(saveImagePromises)
 
@@ -127,31 +105,10 @@ export const addOrderInfo = mutationField("addOrderInfo", {
     ),
   },
   resolve: async (_root, { id, orderInfoInput, uploadImageList }, { pubsub }) => {
-    const { svgList, ...orderInfoList } = orderInfoInput
-    if (!svgList && !uploadImageList) {
-      throw new Error("Must have svgList or uploadImageList")
-    }
-    let saveImagePromises: Array<Promise<string>> = []
-    if (svgList !== null && svgList !== undefined) {
-      // Save Images to local disk
-      saveImagePromises = svgList.map(async (svgImage: string) => {
-        // Get image URL
-        const saveFileResult: INewFile = await saveImage(svgImage)
-        const imageUrl = getFileUrl(saveFileResult.filename)
-        return imageUrl
-      })
-    }
-    if (uploadImageList !== null && uploadImageList !== undefined) {
-      // Save Images to local disk
-      saveImagePromises = uploadImageList.map(async (image: Promise<IUpload>) => {
-        // Get image URL
-        const saveFileResult: INewFile = await saveImage(undefined, image)
-        const imageUrl = getFileUrl(saveFileResult.filename)
-        return imageUrl
-      })
-    }
+    const { svgList, b64list, ...orderInfoList } = orderInfoInput
+    const saveImagePromises = saveImages(svgList, uploadImageList, b64list)
 
-    const imageUrls: string[] = await Promise.all(saveImagePromises)
+    const imageUrls = await Promise.all(saveImagePromises)
 
     await prisma.orderInfo.create({
       data: {

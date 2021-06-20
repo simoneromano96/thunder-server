@@ -1,5 +1,6 @@
 import { Order, OrderInfo } from "@prisma/client"
 import prisma from "../../utils/db"
+import { getFileUrl, IUpload, saveBase64Image, saveImage } from "../../utils/file"
 import { ChangeTypes } from "./types"
 
 type OrderWithInfo = Order & {
@@ -48,3 +49,41 @@ export const publishOrderChange = async (pubsub: any, changeType: ChangeTypes, o
       payload: { order, changeType },
     }),
   ])
+
+export const saveImages = (
+  svgList?: string[] | null | undefined,
+  uploadImageList?: Promise<IUpload>[] | null | undefined,
+  b64list?: string[] | null | undefined,
+): Array<Promise<string>> => {
+  if (!svgList && !uploadImageList && !b64list) {
+    throw new Error("Must have svgList or uploadImageList or b64list")
+  }
+  let saveImagePromises: Array<Promise<string>> = []
+  if (svgList !== null && svgList !== undefined) {
+    // Save Images to local disk
+    saveImagePromises = svgList.map(async (svgImage) => {
+      // Get image URL
+      const saveFileResult = await saveImage(svgImage)
+      const imageUrl = getFileUrl(saveFileResult.filename)
+      return imageUrl
+    })
+  }
+  if (b64list !== null && b64list !== undefined) {
+    saveImagePromises = b64list.map(async (b64image) => {
+      // Get image URL
+      const saveFileResult = await saveBase64Image(b64image)
+      const imageUrl = getFileUrl(saveFileResult.filename)
+      return imageUrl
+    })
+  }
+  if (uploadImageList !== null && uploadImageList !== undefined) {
+    // Save Images to local disk
+    saveImagePromises = uploadImageList.map(async (image: Promise<IUpload>) => {
+      // Get image URL
+      const saveFileResult = await saveImage(undefined, image)
+      const imageUrl = getFileUrl(saveFileResult.filename)
+      return imageUrl
+    })
+  }
+  return saveImagePromises
+}
