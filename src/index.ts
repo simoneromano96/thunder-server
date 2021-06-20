@@ -22,7 +22,7 @@ import { promises } from "fs"
 import { schema } from "./schema"
 import config from "./config"
 import { getPublicPrefix } from "./utils/file"
-import { verifyToken } from "./utils/jwt"
+// import { verifyToken } from "./utils/jwt"
 
 const main = async () => {
   console.log("App configuration")
@@ -105,20 +105,20 @@ const main = async () => {
     // graphiql: "playground",
     prefix: config.app.apiPrefix,
     // Expose request and reply objects in context
-    context: async (request, _reply) => {
-      let context
-      try {
-        const authorizationHeader = request.headers.authorization
-        if (authorizationHeader !== undefined) {
-          const token = authorizationHeader.replace("Bearer ", "")
-          const payload = await verifyToken(token)
-          context = { payload }
-        }
-      } catch (error) {
-        console.error(error)
-      }
-      return context
-    },
+    // context: async (request, _reply) => {
+    //   let context
+    //   try {
+    //     const authorizationHeader = request.headers.authorization
+    //     if (authorizationHeader !== undefined) {
+    //       const token = authorizationHeader.replace("Bearer ", "")
+    //       const payload = await verifyToken(token)
+    //       context = { payload }
+    //     }
+    //   } catch (error) {
+    //     console.error(error)
+    //   }
+    //   return context
+    // },
   })
 
   await app.listen(config.app.port, "0.0.0.0")
