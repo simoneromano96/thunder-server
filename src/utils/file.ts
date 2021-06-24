@@ -89,8 +89,8 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
 }
 
 export const saveBase64Image = async (base64Image: string): Promise<INewFile> => {
-  const base64Data = base64Image.replace(/^data:image\/png;base64,/, "")
-  return await saveStringFile(base64Data, "png")
+  // const base64Data = base64Image.replace(/^data:image\/png;base64,/, "")
+  return await saveStringFile(base64Image, "png")
 }
 
 /**
