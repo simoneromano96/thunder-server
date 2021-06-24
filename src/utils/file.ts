@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid"
 import { extension as getExtension } from "mime-types"
+import filetype from "file-type"
 import { createWriteStream, promises, ReadStream } from "fs"
 import path from "path"
 import { pipeline } from "stream/promises"
@@ -37,7 +38,7 @@ const getFilepathAndFilename = (fileExtension: string) => {
  * @param image the raw binary image data
  * @throws Will throw if the image file has no suitable file extension
  */
-export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
+export const saveUploadedFile = async (image: Promise<IUpload>): Promise<INewFile> => {
   const { createReadStream, mimetype } = await image
 
   const readStream = createReadStream()
@@ -61,7 +62,7 @@ export const saveFile = async (image: Promise<IUpload>): Promise<INewFile> => {
  * @param fileContent The string with the file contents
  * @param fileExtension The file extension
  */
-export const saveStringFile = async (fileContent: string, fileExtension: string): Promise<INewFile> => {
+export const saveFile = async (fileContent: string | Uint8Array, fileExtension: string): Promise<INewFile> => {
   const { filepath, filename } = getFilepathAndFilename(fileExtension)
 
   await promises.writeFile(filepath, fileContent)
@@ -80,17 +81,19 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
   }
   let saveFileResult!: INewFile
   if (image) {
-    saveFileResult = await saveFile(image)
+    saveFileResult = await saveUploadedFile(image)
   } else if (svgImage) {
     const optimized = await optimizeSvg(svgImage)
-    saveFileResult = await saveStringFile(optimized, "svg")
+    saveFileResult = await saveFile(optimized, "svg")
   }
   return saveFileResult
 }
 
 export const saveBase64Image = async (base64Image: string): Promise<INewFile> => {
   // const base64Data = base64Image.replace(/^data:image\/png;base64,/, "")
-  return await saveStringFile(base64Image, "png")
+  const buffer = Buffer.from(base64Image, "base64")
+  const extension = await filetype.fromBuffer(buffer)
+  return await saveFile(buffer, extension?.ext ?? "")
 }
 
 /**
