@@ -1,6 +1,6 @@
 {
   "name": "thunder_server",
-  "version": "1.0.0",
+  "version": "0.10.0",
   "description": "GraphQL Thunder backend",
   "main": "./src/index.ts",
   "scripts": {
@@ -43,7 +43,7 @@
     "mercurius-upload": "^2.0.0",
     "mime-types": "^2.1.31",
     "nanoid": "^3.1.23",
-    "nexus": "^1.0.0",
+    "nexus": "^1.1.0",
     "svgo": "^2.3.0"
   },
   "devDependencies": {
@@ -52,8 +52,8 @@
     "@types/node": "^15.12.4",
     "@types/svgo": "^2.3.0",
     "@types/ws": "^7.4.5",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
