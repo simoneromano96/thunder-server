@@ -29,7 +29,7 @@ export const Order = objectType({
   name: "Order",
   description: "An order object",
   definition(t) {
-    t.id("id", { description: "The order's unique ID" })
+    t.nonNull.id("id", { description: "The order's unique ID" })
     t.nonNull.string("table", { description: "The table of the order" })
     // t.string("waiter", { description: "The waiter that made the order" })
     // t.list.string("imageUrls", { description: "Uploaded image urls" })

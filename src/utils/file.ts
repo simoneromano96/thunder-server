@@ -88,6 +88,11 @@ export const saveImage = async (svgImage: string | null | undefined, image?: Pro
   return saveFileResult
 }
 
+export const saveBase64Image = async (base64Image: string): Promise<INewFile> => {
+  const base64Data = base64Image.replace(/^data:image\/png;base64,/, "")
+  return await saveStringFile(base64Data, "png")
+}
+
 /**
  * Gets this server's public prefix
  */

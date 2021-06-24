@@ -3,11 +3,12 @@ import { argon2id } from "argon2"
 
 export default {
   app: {
-    port: process.env.APP_PORT ?? 3000,
+    port: process.env.APP_PORT ?? 3001,
     db: process.env.APP_DB ?? "mongodb://root:example@localhost",
     apiPrefix: process.env.APP_API_PREFIX,
     staticPrefix: process.env.APP_STATIC_PREFIX ?? "/public",
-    hostname: process.env.APP_HOSTNAME ?? "http://localhost:3000",
+    hostname: process.env.APP_HOSTNAME ?? "http://localhost:3001",
+    easyRchPrintfUri: process.env.APP_EASY_RCH_PRINTF_URI ?? "https://easy-rch-printf.simoneromano.eu",
     session: {
       secret: process.env.APP_SESSION_SECRET ?? "CNLxr58XzCaZuodxfZxQsOCRxTRrCki5",
     },
